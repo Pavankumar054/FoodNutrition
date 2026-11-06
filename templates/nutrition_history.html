@@ -1,0 +1,708 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nutrition History | FoodNutri</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body.history-page {
+            background: #eef3ef;
+            min-height: 100vh;
+        }
+
+        .history-wrap {
+            width: min(1180px, 94%);
+            margin: 35px auto 60px;
+        }
+
+        .history-hero {
+            background: linear-gradient(135deg, #172733, #243b4a);
+            color: white;
+            border-radius: 22px;
+            padding: 30px;
+            box-shadow: 0 12px 32px rgba(20,40,50,.16);
+        }
+
+        .history-hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(25px, 4vw, 36px);
+        }
+
+        .history-hero p {
+            color: #c5d4df;
+            margin: 0;
+        }
+
+        .history-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+
+        .history-nav a {
+            text-decoration: none;
+            color: #263b48;
+            background: white;
+            border: 1px solid #d7e1dc;
+            border-radius: 10px;
+            padding: 11px 22px;
+            font-weight: 700;
+            transition: .2s ease;
+        }
+
+        .history-nav a.active,
+        .history-nav a:hover {
+            color: white;
+            background: #97ef59;
+            border-color: #090a12;
+        }
+
+        .history-subtitle {
+            color: #64737b;
+            margin-bottom: 20px;
+        }
+
+        /* GAUGE GRID */
+
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .gauge-card {
+            background: #1d2b36;
+            color: white;
+            border-radius: 18px;
+            padding: 22px 16px 20px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(20,40,50,.12);
+            overflow: hidden;
+        }
+
+        .gauge-card h3 {
+            margin: 0;
+            font-size: 17px;
+            color: #e8eff5;
+        }
+
+        .gauge {
+            width: 100%;
+            max-width: 290px;
+            display: block;
+            margin: 4px auto -3px;
+            overflow: visible;
+        }
+
+        .gauge-track,
+        .gauge-value {
+            fill: none;
+            stroke-width: 15;
+            stroke-linecap: butt;
+        }
+
+        .gauge-track {
+            stroke: #304b60;
+        }
+
+        .gauge-value {
+            stroke: #6867f0;
+            stroke-dasharray: 0 100;
+            transition: stroke-dasharray 1.35s cubic-bezier(.2,.8,.2,1);
+        }
+
+        .gauge-number {
+            fill: white;
+            font-size: 27px;
+            font-weight: 800;
+            text-anchor: middle;
+        }
+
+        .gauge-unit {
+            fill: #c6d4df;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .gauge-scale {
+            fill: #aebfce;
+            font-size: 10px;
+        }
+
+        .gauge-percent {
+            color: #a9a8ff;
+            font-weight: 800;
+            font-size: 14px;
+            margin-top: -3px;
+        }
+
+        .gauge-detail {
+            color: #c4d0da;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.7;
+        }
+
+        .gauge-detail strong {
+            color: white;
+        }
+
+        /* SUMMARY */
+
+        .history-summary {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .summary-item {
+            background: white;
+            border-radius: 13px;
+            padding: 15px;
+            box-shadow: 0 5px 16px rgba(30,55,45,.06);
+        }
+
+        .summary-item span {
+            display: block;
+            color: #74827b;
+            font-size: 12px;
+            margin-bottom: 7px;
+        }
+
+        .summary-item strong {
+            color: #263c34;
+            font-size: 18px;
+        }
+
+        /* CHART */
+
+        .history-chart-card {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 7px 24px rgba(30,55,45,.07);
+        }
+
+        .history-chart-card h2 {
+            margin: 0 0 5px;
+            color: #243b35;
+        }
+
+        .history-chart-card p {
+            color: #718078;
+            margin-bottom: 20px;
+        }
+
+        .chart-holder {
+            position: relative;
+            height: 310px;
+        }
+
+        .history-footnote {
+            text-align: center;
+            color: #7a8780;
+            font-size: 12px;
+            margin: 20px 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 22px;
+            color: #397f54;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 850px) {
+            .gauge-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .history-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            .history-hero {
+                padding: 23px 19px;
+            }
+
+            .gauge-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .history-chart-card {
+                padding: 17px;
+            }
+
+            .chart-holder {
+                height: 260px;
+            }
+        }
+    </style>
+</head>
+
+<body class="history-page">
+
+<div class="app-container">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="logo">
+            🥗 <span>FoodNutri</span>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('home') }}">HOME</a>
+
+            <a href="{{ url_for('nutrition_history') }}">
+                NUTRITION HISTORY
+            </a>
+
+            <a href="{{ url_for('logout') }}">
+                LOGOUT
+            </a>
+        </nav>
+
+    </header>
+
+
+    <main class="history-wrap">
+
+        <!-- DASHBOARD TITLE -->
+
+        <section class="history-hero">
+
+            <h1>Nutrition History Dashboard</h1>
+
+            <p>
+                Welcome, {{ name }}.
+                Track your nutrition intake against
+                your personalized daily targets.
+            </p>
+
+            <p style="margin-top:12px;">
+                <strong>Current goal:</strong> {{ goal_name }}
+            </p>
+
+        </section>
+
+
+        <!-- DAY WEEK MONTH -->
+
+        <nav class="history-nav">
+
+            <a
+                class="{% if period == 'day' %}active{% endif %}"
+                href="{{ url_for('nutrition_history', period='day') }}">
+                Day
+            </a>
+
+            <a
+                class="{% if period == 'week' %}active{% endif %}"
+                href="{{ url_for('nutrition_history', period='week') }}">
+                Week
+            </a>
+
+            <a
+                class="{% if period == 'month' %}active{% endif %}"
+                href="{{ url_for('nutrition_history', period='month') }}">
+                Month
+            </a>
+
+        </nav>
+
+
+        <h2>{{ period_title }} – Nutrition Progress</h2>
+
+        {% if period == 'day' %}
+
+            <p class="history-subtitle">
+                Today's total intake compared with your daily target.
+            </p>
+
+        {% else %}
+
+            <p class="history-subtitle">
+                Average daily intake over this period compared
+                with your daily target.
+            </p>
+
+        {% endif %}
+
+
+        <!-- FIVE ANIMATED GAUGES -->
+
+        <section class="gauge-grid">
+
+            {% for item in metrics %}
+
+            <article class="gauge-card">
+
+                <h3>{{ item.label }}</h3>
+
+                <svg
+                    class="gauge"
+                    viewBox="0 0 240 145"
+                    role="img"
+                    aria-label="{{ item.label }}">
+
+                    <!-- BACKGROUND ARC -->
+
+                    <path
+                        class="gauge-track"
+                        d="M 20 125 A 100 100 0 0 1 220 125"
+                        pathLength="100">
+                    </path>
+
+                    <!-- ANIMATED ARC -->
+
+                    <path
+                        class="gauge-value"
+                        data-percent="{{ item.percentage }}"
+                        d="M 20 125 A 100 100 0 0 1 220 125"
+                        pathLength="100">
+                    </path>
+
+                    <!-- SCALE -->
+
+                    <text
+                        class="gauge-scale"
+                        x="17"
+                        y="143">0</text>
+
+                    <text
+                        class="gauge-scale"
+                        x="220"
+                        y="143"
+                        text-anchor="end">
+                        {{ item.target }}
+                    </text>
+
+                    <!-- CONSUMED VALUE -->
+
+                    <text
+                        class="gauge-number"
+                        x="120"
+                        y="91">
+                        {{ item.consumed }}
+                    </text>
+
+                    <text
+                        class="gauge-unit"
+                        x="120"
+                        y="111">
+                        {{ item.unit }} consumed
+                    </text>
+
+                </svg>
+
+                <div class="gauge-percent">
+                    {{ item.percentage }}% of target
+                </div>
+
+                <div class="gauge-detail">
+
+                    Target:
+                    <strong>
+                        {{ item.target }} {{ item.unit }}
+                    </strong>
+
+                    <br>
+
+                    {% if item.remaining > 0 %}
+
+                        Remaining:
+                        <strong>
+                            {{ item.remaining }} {{ item.unit }}
+                        </strong>
+
+                    {% else %}
+
+                        Target reached or exceeded
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </section>
+
+
+        <!-- HISTORY SUMMARY -->
+
+        <section class="history-summary">
+
+            <div class="summary-item">
+
+                <span>Period</span>
+
+                <strong>
+                    {{ total_days }} day{% if total_days != 1 %}s{% endif %}
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Total Calories</span>
+
+                <strong>
+                    {{ daily_totals.calories }} kcal
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Total Protein</span>
+
+                <strong>
+                    {{ daily_totals.protein }} g
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Total Carbohydrates</span>
+
+                <strong>
+                    {{ daily_totals.carbohydrates }} g
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Total Fiber</span>
+
+                <strong>
+                    {{ daily_totals.fiber }} g
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <!-- CALORIE HISTORY CHART -->
+
+        <section class="history-chart-card">
+
+            <h2>Calories History</h2>
+
+            <p>
+                Daily calories consumed during {{ period_title|lower }}.
+            </p>
+
+            <div class="chart-holder">
+
+                <canvas id="calorieHistoryChart"></canvas>
+
+            </div>
+
+        </section>
+
+
+        <p class="history-footnote">
+
+            Nutrition values are calculated from the foods saved
+            in your FoodNutri analysis history.
+
+            Week and Month gauges show average intake per day;
+            summary figures show period totals.
+
+        </p>
+
+
+        <a
+            class="back-link"
+            href="{{ url_for('home') }}">
+
+            ← Back to FoodNutri Home
+
+        </a>
+
+    </main>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+    // ANIMATED NUTRITION GAUGES
+
+    window.addEventListener("load", () => {
+
+        document.querySelectorAll(".gauge-value").forEach((arc) => {
+
+            const percent = Math.max(
+                0,
+                Math.min(
+                    100,
+                    Number(arc.dataset.percent) || 0
+                )
+            );
+
+            requestAnimationFrame(() => {
+
+                arc.style.strokeDasharray =
+                    `${percent} 100`;
+
+            });
+
+        });
+
+    });
+
+
+    // CHART DATA FROM FLASK
+
+    const chartLabels = {{ chart_labels | tojson }};
+
+    const calorieValues = {{ calorie_values | tojson }};
+
+    const calorieTarget = {{ calorie_target | tojson }};
+
+
+    const chartCanvas =
+        document.getElementById("calorieHistoryChart");
+
+
+    // CREATE CHART
+
+    if (window.Chart && chartCanvas) {
+
+        new Chart(chartCanvas, {
+
+            type: "line",
+
+            data: {
+
+                labels: chartLabels,
+
+                datasets: [
+
+                    {
+                        label: "Calories consumed",
+
+                        data: calorieValues,
+
+                        borderColor: "#6266e9",
+
+                        backgroundColor:
+                            "rgba(98, 102, 233, 0.13)",
+
+                        fill: true,
+
+                        tension: 0.35,
+
+                        pointRadius: 3,
+
+                        pointHoverRadius: 6
+                    },
+
+                    {
+                        label: "Daily target",
+
+                        data: chartLabels.map(
+                            () => calorieTarget
+                        ),
+
+                        borderColor: "#42a36b",
+
+                        borderDash: [7, 5],
+
+                        pointRadius: 0,
+
+                        fill: false,
+
+                        tension: 0
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+
+                plugins: {
+
+                    legend: {
+                        position: "bottom"
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: "Calories (kcal)"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+    else if (chartCanvas) {
+
+        chartCanvas.insertAdjacentHTML(
+
+            "afterend",
+
+            "<p>Chart library could not load. Your nutrition gauges and history totals are still available.</p>"
+
+        );
+
+    }
+
+</script>
+
+</body>
+</html>

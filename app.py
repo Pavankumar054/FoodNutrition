@@ -38,7 +38,7 @@ import smtplib
 
 from email.message import EmailMessage
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 try:
 
@@ -751,91 +751,69 @@ def get_today_totals(user_id):
 
 
 
+
 def send_email(recipient, subject, body):
-
-    """
-
-    Send an email using SMTP settings supplied through environment variables.
-
-
-
-    Required:
-
-      FOODNUTRI_SMTP_HOST
-
-      FOODNUTRI_SMTP_PORT
-
-      FOODNUTRI_SMTP_USERNAME
-
-      FOODNUTRI_SMTP_PASSWORD
-
-      FOODNUTRI_FROM_EMAIL
-
-
-
-    Example for Gmail:
-
-      host = smtp.gmail.com
-
-      port = 587
-
-      username = your Gmail address
-
-      password = a Gmail App Password
-
-      from = your Gmail address
-
-    """
-
-    host = os.getenv("FOODNUTRI_SMTP_HOST")
-
+    """Send an email and log the failing SMTP step without exposing credentials."""
+    host = os.getenv("FOODNUTRI_SMTP_HOST", "smtp.gmail.com")
     port = int(os.getenv("FOODNUTRI_SMTP_PORT", "587"))
 
     username = os.getenv("FOODNUTRI_SMTP_USERNAME")
-
     password = os.getenv("FOODNUTRI_SMTP_PASSWORD")
-
     from_email = os.getenv("FOODNUTRI_FROM_EMAIL") or username
 
-
-
     if not all([host, username, password, from_email, recipient]):
+        print(
+            "Email configuration missing:",
+            {
+                "host_set": bool(host),
+                "port": port,
+                "username_set": bool(username),
+                "password_set": bool(password),
+                "from_email_set": bool(from_email),
+                "recipient_set": bool(recipient),
+            },
+        )
+        return False, "Email settings are not configured. Check the .env variable names."
 
-        return False, "Email settings are not configured."
-
-
-
+    stage = "creating message"
     try:
-
         msg = EmailMessage()
-
         msg["Subject"] = subject
-
         msg["From"] = from_email
-
         msg["To"] = recipient
-
         msg.set_content(body)
 
+        print(f"SMTP configuration: host={host}, port={port}, TLS=STARTTLS")
+        print("SMTP credentials present:", bool(username), bool(password))
 
+        stage = "connecting to SMTP server"
+        with smtplib.SMTP(host, port, timeout=30) as server:
+            stage = "initial EHLO"
+            server.ehlo()
+            server.set_debuglevel(1)
 
-        with smtplib.SMTP(host, port, timeout=20) as server:
-
+            stage = "STARTTLS handshake"
             server.starttls()
 
-            server.login(username, password)
+            stage = "EHLO after STARTTLS"
+            server.ehlo()
+            print("SMTP TLS handshake successful.")
 
+            stage = "Gmail authentication"
+            server.login(username, password)
+            print("SMTP login successful.")
+
+            stage = "sending message"
             server.send_message(msg)
 
-
-
+        print("Email sent successfully!")
         return True, "Email sent successfully."
 
     except Exception as exc:
+        # Do not enable smtplib debuglevel: its AUTH log can expose credentials.
+        print(f"Email error during {stage}: {type(exc).__name__}: {exc}")
+        return False, f"Email failed during {stage}: {type(exc).__name__}: {exc}"
 
-        print("Email error:", exc)
-
-        return False, "Food saved, but the email could not be sent."
 
 
 
@@ -3452,13 +3430,159 @@ def send_test_summary_alert():
 
     )
 
-    ok, status = send_email(profile["email"], message)
+    ok, status = send_email(
+    profile["email"],
+    "FoodNutri - Test Nutrition Summary",
+    message
+)
 
     flash(status)
 
     return redirect(url_for("home"))
 
 
+
+
+
+
+
+# =========================================================
+# 23. NUTRITION HISTORY DASHBOARD
+# =========================================================
+
+@app.route("/nutrition-history")
+def nutrition_history():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    profile = get_profile_with_id(session["user_id"])
+
+    if not profile:
+        flash("Please create your Nutrition Profile first.")
+        return redirect(url_for("nutrition_profile"))
+
+    # Use India-local calendar dates for the dashboard period.
+    if ZoneInfo is not None:
+        today = datetime.now(ZoneInfo("Asia/Kolkata")).date()
+    else:
+        today = datetime.now().date()
+
+    period = request.args.get("period", "day").lower()
+    if period not in ("day", "week", "month"):
+        period = "day"
+
+    days_count = {"day": 1, "week": 7, "month": 30}[period]
+    start_date = today - timedelta(days=days_count - 1)
+
+    conn = get_db_connection()
+    rows = conn.execute("""
+        SELECT
+            DATE(analyzed_at, 'localtime') AS history_date,
+            SUM(CAST(calories AS REAL)) AS calories,
+            SUM(CAST(protein AS REAL)) AS protein,
+            SUM(CAST(carbohydrates AS REAL)) AS carbohydrates,
+            SUM(CAST(fat AS REAL)) AS fat,
+            SUM(CAST(fiber AS REAL)) AS fiber
+        FROM analysis_history
+        WHERE user_id = ?
+          AND DATE(analyzed_at, 'localtime') BETWEEN ? AND ?
+        GROUP BY DATE(analyzed_at, 'localtime')
+        ORDER BY history_date
+    """, (
+        session["user_id"],
+        start_date.isoformat(),
+        today.isoformat()
+    )).fetchall()
+    conn.close()
+
+    # Build a complete date range so days without a food entry count as zero.
+    daily_data = {}
+    for row in rows:
+        daily_data[str(row["history_date"])] = {
+            "calories": float(row["calories"] or 0),
+            "protein": float(row["protein"] or 0),
+            "carbohydrates": float(row["carbohydrates"] or 0),
+            "fat": float(row["fat"] or 0),
+            "fiber": float(row["fiber"] or 0)
+        }
+
+    date_list = [
+        start_date + timedelta(days=offset)
+        for offset in range(days_count)
+    ]
+
+    totals = {
+        key: sum(daily_data.get(day.isoformat(), {}).get(key, 0) for day in date_list)
+        for key in ("calories", "protein", "carbohydrates", "fat", "fiber")
+    }
+
+    # Day shows the actual intake today. Week and Month show average intake per day.
+    divisor = days_count if period in ("week", "month") else 1
+    displayed_intake = {
+        key: round(value / divisor, 1)
+        for key, value in totals.items()
+    }
+
+    targets = {
+        "calories": float(profile["daily_calories"] or 0),
+        "protein": float(profile["protein"] or 0),
+        "carbohydrates": float(profile["carbohydrates"] or 0),
+        "fat": float(profile["fat"] or 0),
+        "fiber": float(profile["fiber"] or 0)
+    }
+
+    metric_labels = {
+        "calories": ("Calories", "kcal"),
+        "protein": ("Protein", "g"),
+        "carbohydrates": ("Carbohydrates", "g"),
+        "fat": ("Fat", "g"),
+        "fiber": ("Fiber", "g")
+    }
+
+    metrics = []
+    for key, (label, unit) in metric_labels.items():
+        target = targets[key]
+        consumed = displayed_intake[key]
+        percentage = min((consumed / target * 100) if target > 0 else 0, 100)
+        metrics.append({
+            "key": key,
+            "label": label,
+            "unit": unit,
+            "consumed": round(consumed, 1),
+            "target": round(target, 1),
+            "remaining": round(max(target - consumed, 0), 1),
+            "percentage": round(percentage, 1)
+        })
+
+    goal_value = str(profile["goal"] or "").strip().lower().replace("-", "_").replace(" ", "_")
+    goal_names = {
+        "weight_loss": "Weight Loss",
+        "weight_balance": "Weight Balance",
+        "balance": "Weight Balance",
+        "weight_gain": "Weight Gain"
+    }
+    goal_name = goal_names.get(goal_value, "Personalized Nutrition")
+
+    chart_labels = [day.strftime("%d %b") for day in date_list]
+    calorie_values = [
+        round(daily_data.get(day.isoformat(), {}).get("calories", 0), 1)
+        for day in date_list
+    ]
+
+    return render_template(
+        "nutrition_history.html",
+        name=session.get("user_name", "User"),
+        period=period,
+        period_title={"day": "Today", "week": "Last 7 Days", "month": "Last 30 Days"}[period],
+        goal_name=goal_name,
+        metrics=metrics,
+        total_days=days_count,
+        chart_labels=chart_labels,
+        calorie_values=calorie_values,
+        calorie_target=targets["calories"],
+        daily_totals={key: round(value, 1) for key, value in totals.items()}
+    )
 
 
 

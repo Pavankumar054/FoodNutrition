@@ -10,12 +10,11 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
 
-    background: linear-gradient(
-        135deg,
-        #eef2ff,
-        #dcd6ff
-    );
+    background: url("/static/images/food_background.png")
+            center center / cover no-repeat fixed !important;
 
     min-height: 100vh;
 
@@ -23,7 +22,6 @@ body {
     align-items: center;
     justify-content: center;
 }
-
 
 /* ------------------------------
    PAGE CONTAINER
@@ -54,7 +52,7 @@ body {
 
     border-radius: 25px;
 
-    border: 4px solid #6d55c7;
+    border: 4px solid #15131e;
 
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -112,7 +110,7 @@ form input {
 
     height: 52px;
 
-    border: 2px solid #e0e0e0;
+    border: 2px solid #a2e94c;
 
     border-radius: 10px;
 
@@ -131,9 +129,9 @@ form input {
 /* Input focus */
 
 form input:focus {
-    border-color: #6d55c7;
+    border-color: #66ec74;
 
-    box-shadow: 0 0 5px rgba(109, 85, 199, 0.3);
+    box-shadow: 0 0 5px rgba(107, 239, 113, 0.3);
 }
 
 
@@ -150,7 +148,7 @@ form input:focus {
 }
 
 .forgot a {
-    color: #5d75c9;
+    color: #67eb6e;
 
     text-decoration: none;
 
@@ -179,8 +177,8 @@ form button {
 
     background: linear-gradient(
         90deg,
-        #5c6fe5,
-        #7740a8
+        #a1e963,
+        #e19d50
     );
 
     color: white;
@@ -322,8 +320,8 @@ body:has(.login-box) {
     background:
         linear-gradient(
             135deg,
-            #dff7ed,
-            #e9e5ff
+            #30ce8c,
+            #ba7123
         );
 }
 
@@ -449,11 +447,11 @@ body:has(.login-box) {
     background:
         linear-gradient(
             90deg,
-            #36a269,
-            #277fa7
+            #cb5d1d,
+            #b42ac9
         );
 
-    color: white;
+    color: rgb(198, 207, 198);
 
     font-size: 16px;
 
@@ -516,11 +514,11 @@ body.home-page {
 
     padding: 0;
 
-    background: #e8f7ee;
+    background: #edefed;
 
     font-family: Arial, Helvetica, sans-serif;
 
-    color: #29b272;
+    color: #111010;
 }
 
 
@@ -582,7 +580,7 @@ body.home-page {
 
     font-weight: bold;
 
-    color: #258c5d;
+    color: #10140e;
 
 }
 
@@ -602,9 +600,9 @@ body.home-page {
 
     text-decoration: none;
 
-    color: white;
+    color: rgb(15, 11, 11);
 
-    background: #278b60;
+    background: #e8b23c;
 
     padding: 9px 22px;
 
@@ -637,8 +635,8 @@ body.home-page {
     background:
         linear-gradient(
             135deg,
-            #e2f7ed,
-            #eaf6fb
+            #edf0ed,
+            #9beb80
         );
 
     border-bottom: 5px solid #242925;
@@ -676,14 +674,14 @@ body.home-page {
 
     display: block;
 
-    color: #2b9562;
+    color: #0d0f0b;
 
 }
 
 
 .welcome-description {
 
-    color: #66746d;
+    color: #b85905;
 
     font-size: 15px;
 
@@ -706,9 +704,9 @@ body.home-page {
 
     text-align: center;
 
-    background: white;
+    background: rgb(222, 241, 204);
 
-    border-bottom: 5px solid #242925;
+    border-bottom: 5px solid #eef4f0;
 
 }
 
@@ -729,7 +727,7 @@ body.home-page {
 
     justify-content: center;
 
-    background: #2b9a65;
+    background: #f3b139;
 
     color: white;
 
@@ -753,7 +751,7 @@ body.home-page {
 
 .step-description {
 
-    color: #78857f;
+    color: #919d89;
 
     font-size: 14px;
 
@@ -770,7 +768,7 @@ body.home-page {
 
     padding: 20px;
 
-    background: #f7fbf8;
+    background: #e3ebde;
 
     border-radius: 20px;
 
@@ -822,7 +820,7 @@ body.home-page {
 
     margin: 0 0 7px;
 
-    color: #34443c;
+    color: #1f1c19;
 
     font-size: 20px;
 
@@ -833,7 +831,7 @@ body.home-page {
 
     margin: 0 0 8px;
 
-    color: #7c8983;
+    color: #080706;
 
     font-size: 13px;
 
@@ -890,7 +888,7 @@ body.home-page {
 
     border-radius: 18px;
 
-    border: 1px solid #d9ebe1;
+    border: 1px solid #121110;
 }
 
 
@@ -929,7 +927,7 @@ body.home-page {
 
 .nutrition-card {
 
-    background: white;
+    background: rgb(230, 233, 227);
 
     border-radius: 18px;
 
@@ -951,7 +949,7 @@ body.home-page {
 
     padding: 20px 5px;
 
-    border-bottom: 1px solid #e8eeeb;
+    border-bottom: 1px solid #161b18;
 
 }
 
@@ -965,7 +963,7 @@ body.home-page {
 
 .nutrition-row span {
 
-    color: #4c5953;
+    color: #121313;
 
     font-size: 14px;
 
@@ -974,7 +972,7 @@ body.home-page {
 
 .nutrition-row strong {
 
-    color: #29945f;
+    color: #121413;
 
     font-size: 16px;
 

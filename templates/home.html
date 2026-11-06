@@ -13,103 +13,108 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
 
+    <style>
+        /* Nutrition Dashboard */
 
-<style>
-/* Nutrition Dashboard */
+        .nutrition-dashboard {
+            margin-top: 30px;
+        }
 
-.nutrition-dashboard {
-    margin-top: 30px;
-}
+        .dashboard-description {
+            color: #777;
+            margin-bottom: 20px;
+        }
 
-.dashboard-description {
-    color: #777;
-    margin-bottom: 20px;
-}
+        .goal-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-.goal-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 20px;
-}
+        .goal-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
 
-.goal-card {
-    background: white;
-    padding: 25px;
-    border-radius: 18px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    text-align: center;
-}
+        .goal-card h3 {
+            margin: 10px 0;
+        }
 
-.goal-card h3 {
-    margin: 10px 0;
-}
+        .goal-icon {
+            font-size: 30px;
+        }
 
-.goal-icon {
-    font-size: 30px;
-}
+        .goal-calories {
+            font-size: 27px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #4d9960;
+        }
 
-.goal-calories {
-    font-size: 27px;
-    font-weight: bold;
-    margin: 15px 0;
-    color: #4d9960;
-}
+        .goal-calories span {
+            display: block;
+            font-size: 13px;
+            font-weight: normal;
+            color: #777;
+        }
 
-.goal-calories span {
-    display: block;
-    font-size: 13px;
-    font-weight: normal;
-    color: #777;
-}
+        .goal-card p {
+            text-align: left;
+            margin: 10px 0;
+            color: #555;
+        }
 
-.goal-card p {
-    text-align: left;
-    margin: 10px 0;
-    color: #555;
-}
+        .selected-goal {
+            border: 3px solid #5aa469;
+            background: #f0fff3;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(90, 164, 105, 0.25);
+        }
 
-.selected-goal {
-    border: 3px solid #5aa469;
-    background: #f0fff3;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(90, 164, 105, 0.25);
-}
+        .goal-selected {
+            margin-top: 15px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #e9f8ed;
+            color: #3d8b50;
+            font-weight: bold;
+        }
 
-.goal-selected {
-    margin-top: 15px;
-    padding: 8px;
-    border-radius: 8px;
-    background: #e9f8ed;
-    color: #3d8b50;
-    font-weight: bold;
-}
+        .nutrition-note {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            margin-top: 15px;
+        }
 
-.nutrition-note {
-    text-align: center;
-    color: #888;
-    font-size: 12px;
-    margin-top: 15px;
-}
+        .setup-nutrition {
+            text-align: center;
+        }
 
-.setup-nutrition {
-    text-align: center;
-}
+        /* Responsive layout */
 
-@media (max-width: 900px) {
-    .goal-cards {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
+        @media (max-width: 900px) {
+            .goal-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Nutrition History navigation link */
+
+        nav a {
+            text-decoration: none;
+        }
+    </style>
 
 </head>
-
 
 <body class="home-page">
 
 <div class="app-container">
-
 
     <!-- ================= HEADER ================= -->
 
@@ -123,6 +128,10 @@
 
             <a href="{{ url_for('home') }}">
                 HOME
+            </a>
+
+            <a href="{{ url_for('nutrition_history') }}">
+                NUTRITION HISTORY
             </a>
 
             <a href="#about">
@@ -145,19 +154,17 @@
         <div class="welcome-text">
 
             <p class="welcome-user">
-                Welcome, {{ name }} 👋
+                Welcome, {{ name }}
             </p>
 
             <h1>
-                AI-Based Food Detection and Personalized Nutrition Analysis 
+                AI-Based Food Detection and Personalized Nutrition Analysis
                 <span>Using Computer Vision</span>
             </h1>
 
             <p class="welcome-description">
-
                 Upload your food image and discover
                 its nutritional information easily.
-
             </p>
 
         </div>
@@ -165,7 +172,7 @@
     </section>
 
 
-    <!-- ================= STEP 1 ================= -->
+    <!-- ================= STEP 1 : UPLOAD FOOD ================= -->
 
     <section class="step">
 
@@ -180,7 +187,6 @@
         <p class="step-description">
             Select an image of the food you want to analyze.
         </p>
-
 
         <div class="upload-card">
 
@@ -200,7 +206,6 @@
                     hidden
                     onchange="previewImage(event)"
                 >
-
 
                 <!-- UPLOAD BOX -->
 
@@ -228,7 +233,6 @@
 
                 </label>
 
-
                 <!-- IMAGE PREVIEW -->
 
                 <div id="preview-container">
@@ -242,7 +246,6 @@
                         Image Preview
                     </p>
 
-
                     <!-- CLEAR BUTTON -->
 
                     <button
@@ -250,13 +253,10 @@
                         class="clear-btn"
                         onclick="clearImage()"
                     >
-
                         ✕ Clear Image
-
                     </button>
 
                 </div>
-
 
                 <!-- ANALYZE BUTTON -->
 
@@ -264,9 +264,7 @@
                     type="submit"
                     class="analyze-btn"
                 >
-
                     🔍 Analyze Food
-
                 </button>
 
             </form>
@@ -276,7 +274,7 @@
     </section>
 
 
-    <!-- ================= STEP 2 ================= -->
+    <!-- ================= STEP 2 : FOOD DETECTION ================= -->
 
     <section class="step">
 
@@ -289,12 +287,9 @@
         </h2>
 
         <p class="step-description">
-
             Our AI model identifies the food
             from your uploaded image.
-
         </p>
-
 
         <div class="detection-card">
 
@@ -307,10 +302,8 @@
             </h3>
 
             <p>
-
                 The system will analyze your image
                 and detect the food item.
-
             </p>
 
         </div>
@@ -318,7 +311,7 @@
     </section>
 
 
-    <!-- ================= STEP 3 ================= -->
+    <!-- ================= STEP 3 : NUTRITION ANALYSIS ================= -->
 
     <section class="step">
 
@@ -331,12 +324,9 @@
         </h2>
 
         <p class="step-description">
-
             Get important nutritional information
             about your food.
-
         </p>
-
 
         {% if recommendations %}
 
@@ -344,30 +334,30 @@
 
         <div class="nutrition-card">
 
-            <h3>📊 Today's Nutrition</h3>
+            <h3>Today's Nutrition</h3>
 
             <div class="nutrition-row">
-                <span>🔥 Calories</span>
+                <span>Calories</span>
                 <strong>{{ today_totals.calories }} kcal</strong>
             </div>
 
             <div class="nutrition-row">
-                <span>💪 Protein</span>
+                <span>Protein</span>
                 <strong>{{ today_totals.protein }} g</strong>
             </div>
 
             <div class="nutrition-row">
-                <span>🌾 Carbohydrates</span>
+                <span>Carbohydrates</span>
                 <strong>{{ today_totals.carbohydrates }} g</strong>
             </div>
 
             <div class="nutrition-row">
-                <span>🥑 Fat</span>
+                <span>Fat</span>
                 <strong>{{ today_totals.fat }} g</strong>
             </div>
 
             <div class="nutrition-row">
-                <span>🌿 Fiber</span>
+                <span>Fiber</span>
                 <strong>{{ today_totals.fiber }} g</strong>
             </div>
 
@@ -386,7 +376,6 @@
 
             <div class="goal-cards">
 
-
                 <!-- WEIGHT LOSS -->
 
                 <div class="goal-card
@@ -404,29 +393,31 @@
                     </div>
 
                     <p>
-                         Protein:
+                        Protein:
                         {{ recommendations.weight_loss.protein }} g
                     </p>
 
                     <p>
-                         Carbohydrates:
+                        Carbohydrates:
                         {{ recommendations.weight_loss.carbohydrates }} g
                     </p>
 
                     <p>
-                         Fat:
+                        Fat:
                         {{ recommendations.weight_loss.fat }} g
                     </p>
 
                     <p>
-                         Fiber:
+                        Fiber:
                         {{ recommendations.weight_loss.fiber }} g
                     </p>
 
                     {% if selected_goal == 'weight_loss' %}
+
                     <div class="goal-selected">
                         ✓ Selected Goal
                     </div>
+
                     {% endif %}
 
                 </div>
@@ -449,29 +440,31 @@
                     </div>
 
                     <p>
-                         Protein:
+                        Protein:
                         {{ recommendations.weight_balance.protein }} g
                     </p>
 
                     <p>
-                         Carbohydrates:
+                        Carbohydrates:
                         {{ recommendations.weight_balance.carbohydrates }} g
                     </p>
 
                     <p>
-                         Fat:
+                        Fat:
                         {{ recommendations.weight_balance.fat }} g
                     </p>
 
                     <p>
-                         Fiber:
+                        Fiber:
                         {{ recommendations.weight_balance.fiber }} g
                     </p>
 
                     {% if selected_goal == 'weight_balance' %}
+
                     <div class="goal-selected">
                         ✓ Selected Goal
                     </div>
+
                     {% endif %}
 
                 </div>
@@ -494,29 +487,31 @@
                     </div>
 
                     <p>
-                          Protein:
+                        Protein:
                         {{ recommendations.weight_gain.protein }} g
                     </p>
 
                     <p>
-                         Carbohydrates:
+                        Carbohydrates:
                         {{ recommendations.weight_gain.carbohydrates }} g
                     </p>
 
                     <p>
-                         Fat:
+                        Fat:
                         {{ recommendations.weight_gain.fat }} g
                     </p>
 
                     <p>
-                         Fiber:
+                        Fiber:
                         {{ recommendations.weight_gain.fiber }} g
                     </p>
 
                     {% if selected_goal == 'weight_gain' %}
+
                     <div class="goal-selected">
                         ✓ Selected Goal
                     </div>
+
                     {% endif %}
 
                 </div>
@@ -525,7 +520,8 @@
 
             <a
                 href="{{ url_for('nutrition_profile') }}"
-                class="analyze-again">
+                class="analyze-again"
+            >
                 ✏️ Edit Nutrition Profile
             </a>
 
@@ -541,7 +537,7 @@
 
         <div class="nutrition-card setup-nutrition">
 
-            <h3>🎯 Set Your Nutrition Goal</h3>
+            <h3>Set Your Nutrition Goal</h3>
 
             <p>
                 Create your nutrition profile to receive
@@ -550,31 +546,25 @@
 
             <a
                 href="{{ url_for('nutrition_profile') }}"
-                class="analyze-again">
-                 Create Nutrition Profile
+                class="analyze-again"
+            >
+                Create Nutrition Profile
             </a>
 
         </div>
 
         {% endif %}
 
-
-
-       
-
     </section>
 
 
-    <!-- =====================================================
-         STEP 4 : RECENTLY ANALYZED
-         ===================================================== -->
+    <!-- ================= STEP 4 : RECENTLY ANALYZED ================= -->
 
     <section class="step">
 
         <div class="step-number">
             4
         </div>
-
 
         <!-- TITLE + UP/DOWN BUTTON -->
 
@@ -587,14 +577,11 @@
                 </h2>
 
                 <p class="step-description">
-
                     Your recently analyzed food items
                     will appear here.
-
                 </p>
 
             </div>
-
 
             <!-- UP / DOWN BUTTON -->
 
@@ -605,9 +592,7 @@
                 onclick="toggleRecentlyAnalyzed()"
                 aria-label="Show or hide recently analyzed"
             >
-
                 ▼
-
             </button>
 
         </div>
@@ -622,108 +607,71 @@
 
             <div class="recent-card">
 
-
                 {% if recent_foods %}
-
 
                     {% for food in recent_foods %}
 
+                    <div class="recent-food-item">
 
-                        <div class="recent-food-item">
+                        <!-- ICON -->
 
+                        <div class="recent-icon">
+                            *
+                        </div>
 
-                            <!-- ICON -->
+                        <!-- FOOD INFORMATION -->
 
-                            <div class="recent-icon">
+                        <div class="recent-food-info">
 
-                                🍽️
+                            <h3>
+                                {{ food["food_name"] }}
+                            </h3>
 
-                            </div>
+                            <p>
+                                Confidence:
+                                {{ food["confidence"] }}%
+                            </p>
 
+                            <p>
+                                Calories:
+                                {{ food["calories"] }} kcal
+                            </p>
 
-                            <!-- FOOD INFORMATION -->
+                            <p>
+                                Protein:
+                                {{ food["protein"] }} g
+                            </p>
 
-                            <div class="recent-food-info">
+                            <p>
+                                Carbohydrates:
+                                {{ food["carbohydrates"] }} g
+                            </p>
 
+                            <p>
+                                Fat:
+                                {{ food["fat"] }} g
+                            </p>
 
-                                <h3>
-
-                                    {{ food["food_name"] }}
-
-                                </h3>
-
-
-                                <p>
-
-                                    Confidence:
-                                    {{ food["confidence"] }}%
-
-                                </p>
-
-
-                                <p>
-
-                                     Calories:
-                                    {{ food["calories"] }} kcal
-
-                                </p>
-
-
-                                <p>
-
-                                     Protein:
-                                    {{ food["protein"] }} g
-
-                                </p>
-
-
-                                <p>
-
-                                     Carbohydrates:
-                                    {{ food["carbohydrates"] }} g
-
-                                </p>
-
-
-                                <p>
-
-                                     Fat:
-                                    {{ food["fat"] }} g
-
-                                </p>
-
-
-                                <p>
-
-                                     Fiber:
-                                    {{ food["fiber"] }} g
-
-                                </p>
-
-
-                            </div>
-
+                            <p>
+                                Fiber:
+                                {{ food["fiber"] }} g
+                            </p>
 
                         </div>
 
+                    </div>
 
                     {% endfor %}
 
-
                 {% else %}
-
 
                     <!-- NO HISTORY -->
 
                     <div class="recent-food-item">
 
-
                         <div class="recent-icon">
-
                             🍽️
-
                         </div>
-
 
                         <div class="recent-food-info">
 
@@ -732,20 +680,15 @@
                             </h3>
 
                             <p>
-
                                 Upload your first food image
                                 to start your analysis.
-
                             </p>
 
                         </div>
 
-
                     </div>
 
-
                 {% endif %}
-
 
             </div>
 
@@ -766,12 +709,10 @@
         </h2>
 
         <p>
-
             FoodNutri is a food detection and
             nutrients analysis system that uses
             artificial intelligence to identify
             food and provide nutritional information.
-
         </p>
 
     </section>
@@ -782,7 +723,7 @@
     <footer>
 
         <h3>
-             FoodNutri
+            FoodNutri
         </h3>
 
         <p>
@@ -795,7 +736,6 @@
 
     </footer>
 
-
 </div>
 
 
@@ -807,21 +747,16 @@
 
 function previewImage(event) {
 
-    const file =
-        event.target.files[0];
-
+    const file = event.target.files[0];
 
     const preview =
         document.getElementById("preview");
 
-
     const container =
         document.getElementById("preview-container");
 
-
     const uploadBox =
         document.getElementById("upload-box");
-
 
     if (file) {
 
@@ -844,34 +779,27 @@ function clearImage() {
     const input =
         document.getElementById("food-image");
 
-
     const preview =
         document.getElementById("preview");
-
 
     const container =
         document.getElementById("preview-container");
 
-
     const uploadBox =
         document.getElementById("upload-box");
-
 
     /* Clear selected file */
 
     input.value = "";
 
-
     /* Remove preview */
 
     preview.src = "";
-
 
     /* Hide preview */
 
     container.style.display =
         "none";
-
 
     /* Show upload box again */
 
@@ -881,7 +809,6 @@ function clearImage() {
 }
 
 </script>
-
 
 
 <!-- =====================================================
@@ -894,11 +821,8 @@ function clearImage() {
     onclick="toggleHistory()"
     title="Recently Searched"
 >
-
     🕘
-
 </button>
-
 
 
 <!-- =====================================================
@@ -916,71 +840,56 @@ function clearImage() {
             Recently Searched
         </h3>
 
-
         <button
             type="button"
             onclick="toggleHistory()"
         >
-
             ✕
-
         </button>
 
     </div>
 
-
     {% if recent_foods %}
-
 
         {% for food in recent_foods %}
 
+        <div class="history-item">
 
-            <div class="history-item">
+            <div>
 
-                <div>
+                <strong>
+                    {{ food["food_name"] }}
+                </strong>
 
-                    <strong>
-                        {{ food["food_name"] }}
-                    </strong>
+                <br>
 
-                    <br>
-
-                    <small>
-
-                        {{ food["confidence"] }}%
-
-                    </small>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        {{ food["analyzed_at"] }}
-                    </span>
-
-                </div>
+                <small>
+                    {{ food["confidence"] }}%
+                </small>
 
             </div>
 
+            <div>
+
+                <span>
+                    {{ food["analyzed_at"] }}
+                </span>
+
+            </div>
+
+        </div>
 
         {% endfor %}
 
-
     {% else %}
-
 
         <p>
             No recent searches.
         </p>
 
-
     {% endif %}
 
-
 </div>
-
 
 
 <!-- =====================================================
@@ -993,7 +902,6 @@ function toggleHistory() {
 
     const panel =
         document.getElementById("historyPanel");
-
 
     if (
         panel.style.display === "none" ||
@@ -1017,7 +925,6 @@ function toggleHistory() {
 </script>
 
 
-
 <!-- =====================================================
      RECENTLY ANALYZED JAVASCRIPT
      ===================================================== -->
@@ -1031,12 +938,10 @@ function toggleRecentlyAnalyzed() {
             "recentlyAnalyzedContent"
         );
 
-
     const button =
         document.getElementById(
             "recentToggleButton"
         );
-
 
     if (
         content.classList.contains("hidden")
